@@ -1,0 +1,12 @@
+[Unit]
+Description=NDI Recorder
+After=network-online.target
+
+[Service]
+User=root
+ExecStart=/opt/ndi_recorder/bin/ndi_recorder -p /home/pi/
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<head>
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <meta name="theme-color" content="rgb(0,0,255)"/>
+ <title>Sources - NDI Recorder</title>
+ <link rel="stylesheet" type="text/css" media="all" href="main.css">
+  <meta charset="utf-8">
+</head>
+<body onload="showPage()" style="margin:0;background:white">
+<div id="loader"></div>
+<div class="templateContainer">
+ <div class="navbarTopContainer">
+  <div class="leftContainer">
+   <div class="navbarTopBrand">NDI Sources</div>
+  </div>
+  <div class="rightContainer">
+    <div id="edit" class="header-link" onclick="refresh_sources()">Refresh</div>
+  </div>
+ </div>
+ 
+ <div class="totalAppContainer">
+  <nav class="navbar left leftnav border-right">
+   <div class="navbar-header">Currently Recording Streams</div> 
+    <div id="playingContainer">
+     
+    </div> 
+  </nav>
+  <div id="appContainer" class="appContainer">
+   <div id="sourceContainer" class="info-container">
+
+   </div> 
+  </div>
+ </div>
+</div>
+
+<script type="text/javascript">
+ function showPage() {
+  document.getElementById("loader").style.display = "none";
+ }
+</script>
+
+<script>
+  var gateway = `ws://${window.location.hostname}/ws`;
+  var websocket;
+  window.addEventListener('load', onLoad);
+  function initWebSocket() {
+    console.log('Trying to open a WebSocket connection...');
+    websocket = new WebSocket(gateway);
+    websocket.onopen    = onOpen;
+    websocket.onclose   = onClose;
+    websocket.onmessage = onMessage;
+  }
+  function onOpen(event) {
+    console.log('Connection opened');
+    var render_object = {prefix: "refresh", action: "refresh"};
+    var render_json = JSON.stringify(render_object);
+    console.log(render_json);
+    websocket.send(render_json);
+    setInterval(refresh_sources, 3000); //update sources every 3 seconds
+  }
+  function onClose(event) {
+    console.log('Connection closed');
+    setTimeout(initWebSocket, 2000);
+  }
+
+  function onMessage(event) {
+    console.log(event.data); 
+    var json_object = JSON.parse(event.data);
+    console.log(json_object);
+    var prefix = json_object.prefix;
+    var action = json_object.action;
+    if((prefix == "discover_source")&&(action == "display")){
+     var source_list = json_object.source_list; //get NDI source list
+     var source_html = "";
+     for(id in source_list){
+      console.log(source_list[id]);
+      var source_name = source_list[id].name;
+      var source_url = source_list[id].url;
+      source_html += "<div class='d-box'><h2 class='header'>" + source_name + "</h2><h4 class='header'>" + source_url + "</h4><div class='d-box-container'><button class='button-primary' onclick='connect_source(\""+id+"\")''>Record</button></div></div>";
+      console.log(source_html);
+     }
+     if(source_html != ""){
+      document.getElementById("sourceContainer").innerHTML = source_html; 
+     }else{
+      document.getElementById("sourceContainer").innerHTML = "<div class='d-box'><h2 class='header'>No NDI sources found</h2></div>";
+     }
+    }
+    if((prefix == "playing_source")&&(action == "display")){
+     var source_list = json_object.source_list; //get NDI source list
+     var source_html = "";
+     for(id in source_list){
+      console.log(source_list[id]);
+      var source_name = source_list[id].name;
+      source_html += "<div class='d-box'><h2 class='header'>" + source_name + "</h2><div class='d-box-container'><button class='button-primary' onclick='disconnect_source(\""+id+"\")''>Stop</button></div></div>";
+      console.log(source_html);
+     }
+     if(source_html != ""){
+      document.getElementById("playingContainer").innerHTML = source_html; 
+     }else{
+      document.getElementById("playingContainer").innerHTML = "<div class='d-box'><h2 class='header'>Not playing any sources</h2></div>";
+     }
+    }
+  }
+  function onLoad(event) {
+    initWebSocket();
+  }
+
+  function refresh_sources(){
+    var render_object = {prefix: "refresh", action: "refresh"};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+  }
+
+  function connect_source(source_id){
+    var render_object = {prefix: "connect_source", action: source_id};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+    var render_object = {prefix: "refresh", action: "refresh"};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+  }
+
+  function disconnect_source(source_id){
+    var render_object = {prefix: "disconnect_source", action: source_id};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+    var render_object = {prefix: "refresh", action: "refresh"};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+  }
+
+  function save_streams(){
+    var render_object = {prefix: "save_streams", action: "save"};
+    var render_json = JSON.stringify(render_object);
+    websocket.send(render_json);
+  }
+</script>
+
+</body>
+</html>
