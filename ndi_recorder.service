@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 User=root
-ExecStart=/opt/ndi_recorder/bin/ndi_recorder -p /home/pi/
+ExecStart=/opt/ndi_recorder/bin/ndi_recorder -p /media/root/primary/
 Restart=always
 RestartSec=5
 
