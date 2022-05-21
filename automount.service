@@ -1,0 +1,11 @@
+[Unit]
+Description=Automatically mounts drives that are connected on boot
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/automount
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

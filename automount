@@ -1,0 +1,9 @@
+#!/bin/bash
+  cd /dev/disk/by-partlabel
+  for label in *
+  do
+      partition=$(basename $(readlink $label))
+      sudo mkdir -p /media/$USER/$label
+      sudo mount /dev/$partition /media/$USER/$label
+  done
+  exit

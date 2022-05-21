@@ -105,3 +105,12 @@ sudo cp ./ndi_recorder.service /etc/systemd/system/
 sudo systemctl enable ndi_recorder.service
 sudo systemctl start ndi_recorder.service
 ```
+
+## Install automount service (optional):
+
+```
+sudo cp ./automount /usr/bin/
+sudo cp ./automount.service /etc/systemd/system/
+sudo systemctl enable automount.service
+sudo systemctl start automount.service
+```
